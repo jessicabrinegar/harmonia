@@ -23,4 +23,16 @@ describe("Note", () => {
     const note2 = new Note(NoteName.F);
     expect(note1.equals(note2)).toBe(false);
   });
+
+  test("check enharmonic equivalence for non-match", () => {
+    const note1 = new Note(NoteName.CSharp);
+    const note2 = new Note(NoteName.EFlat);
+    expect(note1.isEnharmonicWith(note2)).toBe(false);
+  });
+
+  test("check enharmonic equivalence for match", () => {
+    const note1 = new Note(NoteName.CSharp);
+    const note2 = new Note(NoteName.DFlat);
+    expect(note1.isEnharmonicWith(note2)).toBe(true);
+  });
 });
