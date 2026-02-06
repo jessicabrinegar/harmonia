@@ -1,0 +1,5 @@
+HARMONIA_PROJECT_BRIEF.md
+node_modules/
+.env.local
+dist/
+.convex/
