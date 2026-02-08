@@ -47,7 +47,7 @@ describe("Interval", () => {
     ).toThrow();
   });
 
-  test ("return semitone distance", () => {
+  test("return semitone distance", () => {
     const interval = new Interval(IntervalQuality.Major, IntervalDegree.Third);
     expect(interval.semitones).toBe(4);
   });

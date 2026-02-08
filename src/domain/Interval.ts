@@ -76,6 +76,10 @@ export class Interval {
   }
 
   get semitones(): number {
-    return Interval.semitoneMap.get(`${this.quality}-${this.degree}`)!;
+    const result = Interval.semitoneMap.get(`${this.quality}-${this.degree}`);
+    if (result === undefined) {
+      throw new Error(`No semitone mapping for: ${this.quality} ${this.degree}`);
+    }
+    return result;
   }
 }
