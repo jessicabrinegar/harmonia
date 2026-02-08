@@ -79,9 +79,11 @@ export class Note {
     const enharmonicNames = Array.from(Note.PITCH_MAP.entries())
       .filter(([_, p]) => p === pitch)
       .map(([n, _]) => n);
-    const matchingName = enharmonicNames.find(n => n[0] === letter);
+    const matchingName = enharmonicNames.find((n) => n[0] === letter);
     if (!matchingName) {
-      throw new Error(`No note name found for letter ${letter} and pitch ${pitch}`);
+      throw new Error(
+        `No note name found for letter ${letter} and pitch ${pitch}`,
+      );
     }
     return matchingName;
   }

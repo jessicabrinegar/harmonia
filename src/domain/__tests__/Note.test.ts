@@ -46,7 +46,7 @@ describe("Note", () => {
     expect(noteName).toBe(NoteName.CSharp);
   });
 
-  test ("get pitch from a Note", () => {
+  test("get pitch from a Note", () => {
     const note = new Note(NoteName.G);
     expect(note.pitch).toBe(7);
   });
