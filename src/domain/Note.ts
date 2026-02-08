@@ -62,4 +62,27 @@ export class Note {
   isEnharmonicWith(other: Note): boolean {
     return Note.PITCH_MAP.get(this.name) === Note.PITCH_MAP.get(other.name);
   }
+
+  get baseLetter(): string {
+    return this.name.charAt(0);
+  }
+
+  get pitch(): number {
+    const result = Note.PITCH_MAP.get(this.name);
+    if (result === undefined) {
+      throw new Error(`Pitch not found for note name: ${this.name}`);
+    }
+    return result;
+  }
+
+  static getNoteName(letter: string, pitch: number): NoteName {
+    const enharmonicNames = Array.from(Note.PITCH_MAP.entries())
+      .filter(([_, p]) => p === pitch)
+      .map(([n, _]) => n);
+    const matchingName = enharmonicNames.find(n => n[0] === letter);
+    if (!matchingName) {
+      throw new Error(`No note name found for letter ${letter} and pitch ${pitch}`);
+    }
+    return matchingName;
+  }
 }

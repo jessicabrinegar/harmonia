@@ -35,4 +35,19 @@ describe("Note", () => {
     const note2 = new Note(NoteName.DFlat);
     expect(note1.isEnharmonicWith(note2)).toBe(true);
   });
+
+  test("get base letter from a Note", () => {
+    const note = new Note(NoteName.FSharp);
+    expect(note.baseLetter).toBe("F");
+  });
+
+  test("get note name from base letter and pitch", () => {
+    const noteName = Note.getNoteName("C", 1);
+    expect(noteName).toBe(NoteName.CSharp);
+  });
+
+  test ("get pitch from a Note", () => {
+    const note = new Note(NoteName.G);
+    expect(note.pitch).toBe(7);
+  });
 });
