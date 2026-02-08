@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { Note, NoteName } from "../Note";
 
 describe("Note", () => {
@@ -18,7 +18,7 @@ describe("Note", () => {
     expect(note1.equals(note2)).toBe(true);
   });
 
-  test ("notes with different names should not be equal", () => {
+  test("notes with different names should not be equal", () => {
     const note1 = new Note(NoteName.E);
     const note2 = new Note(NoteName.F);
     expect(note1.equals(note2)).toBe(false);
