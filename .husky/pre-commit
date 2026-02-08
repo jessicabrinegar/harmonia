@@ -1,1 +1,2 @@
+bunx biome check --write .
 bun test
