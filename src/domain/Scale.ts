@@ -29,22 +29,12 @@ export class Scale {
     [ScaleType.MelodicMinor]: [0, 2, 3, 5, 7, 9, 11], //W-H-W-W-W-W-H
   };
 
-  private static readonly letterCycle: string[] = [
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "A",
-    "B",
-  ];
-
   get notes(): Note[] {
     const intervals = Scale.scaleIntervals[this.type];
-    const indexOfRoot = Scale.letterCycle.indexOf(this.root.baseLetter);
+    const indexOfRoot = Note.letterCycle.indexOf(this.root.baseLetter);
     const notes: Note[] = [];
     for (let i = 0; i < intervals.length; i++) {
-      const noteLetter = Scale.letterCycle[(indexOfRoot + i) % 7];
+      const noteLetter = Note.letterCycle[(indexOfRoot + i) % 7];
       const semitoneOffset = intervals[i];
       if (noteLetter === undefined || semitoneOffset === undefined) {
         throw new Error(`Invalid scale degree index: ${i}`);

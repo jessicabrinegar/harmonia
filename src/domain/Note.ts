@@ -1,3 +1,5 @@
+import type { Interval } from "./Interval";
+
 export enum NoteName {
   C = "C",
   CSharp = "C#",
@@ -55,6 +57,16 @@ export class Note {
     [NoteName.BSharp, 0],
   ]);
 
+  public static readonly letterCycle: string[] = [
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "A",
+    "B",
+  ];
+
   equals(other: Note): boolean {
     return this.name === other.name;
   }
@@ -73,6 +85,18 @@ export class Note {
       throw new Error(`Pitch not found for note name: ${this.name}`);
     }
     return result;
+  }
+
+  transpose(interval: Interval): Note {
+    const newPitch = (this.pitch + interval.semitones) % 12;
+    const letterIndex = Note.letterCycle.indexOf(this.baseLetter);
+    const newNote = Note.letterCycle[(letterIndex + interval.degree - 1) % 7];
+    if (!newNote) {
+      throw new Error(
+        `Invalid transposition: base letter ${this.baseLetter} with interval degree ${interval.degree}`,
+      );
+    }
+    return new Note(Note.getNoteName(newNote, newPitch));
   }
 
   static getNoteName(letter: string, pitch: number): NoteName {

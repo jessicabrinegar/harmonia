@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { Interval, IntervalDegree, IntervalQuality } from "../Interval";
 import { Note, NoteName } from "../Note";
 
 describe("Note", () => {
@@ -49,5 +50,24 @@ describe("Note", () => {
   test("get pitch from a Note", () => {
     const note = new Note(NoteName.G);
     expect(note.pitch).toBe(7);
+  });
+
+  test("transpose a note by an interval", () => {
+    const note1 = new Note(NoteName.C);
+    const interval1 = new Interval(IntervalQuality.Major, IntervalDegree.Third);
+    const transposedNote1 = new Note(NoteName.E);
+    const note2 = new Note(NoteName.G);
+    const interval2 = new Interval(
+      IntervalQuality.Perfect,
+      IntervalDegree.Fifth,
+    );
+    const transposedNote2 = new Note(NoteName.D);
+    const note3 = new Note(NoteName.C);
+    const interval3 = new Interval(IntervalQuality.Minor, IntervalDegree.Third);
+    const transposedNote3 = new Note(NoteName.EFlat);
+
+    expect(note1.transpose(interval1)).toEqual(transposedNote1);
+    expect(note2.transpose(interval2)).toEqual(transposedNote2);
+    expect(note3.transpose(interval3)).toEqual(transposedNote3);
   });
 });
