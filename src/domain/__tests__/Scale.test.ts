@@ -69,4 +69,13 @@ describe("Scale", () => {
     expect(cMajor1.equals(dMajor)).toBe(false);
     expect(cMajor1.equals(cMinor)).toBe(false);
   });
+
+  test("check if scale contains specific note", () => {
+    const cMajorScale = new Scale(new Note(NoteName.C), ScaleType.Major);
+    const dSharp = new Note(NoteName.DSharp);
+    const e = new Note(NoteName.E);
+
+    expect(cMajorScale.contains(dSharp)).toBe(false);
+    expect(cMajorScale.contains(e)).toBe(true);
+  });
 });

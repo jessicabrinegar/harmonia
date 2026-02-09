@@ -49,4 +49,8 @@ export class Scale {
   equals(other: Scale): boolean {
     return this.root.equals(other.root) && this.type === other.type;
   }
+
+  contains(note: Note): boolean {
+    return this.notes.some((n) => n.equals(note));
+  }
 }
