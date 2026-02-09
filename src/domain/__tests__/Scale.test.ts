@@ -78,4 +78,17 @@ describe("Scale", () => {
     expect(cMajorScale.contains(dSharp)).toBe(false);
     expect(cMajorScale.contains(e)).toBe(true);
   });
+
+  test("get degree of a note in the scale", () => {
+    const cMajorScale = new Scale(new Note(NoteName.C), ScaleType.Major);
+    const d = new Note(NoteName.D);
+    const e = new Note(NoteName.E);
+    const fSharp = new Note(NoteName.FSharp);
+
+    expect(cMajorScale.degreeOf(d)).toBe(2);
+    expect(cMajorScale.degreeOf(e)).toBe(3);
+    expect(() => cMajorScale.degreeOf(fSharp)).toThrow(
+      "Note F# is not in the scale",
+    );
+  });
 });

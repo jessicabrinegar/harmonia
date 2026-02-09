@@ -53,4 +53,12 @@ export class Scale {
   contains(note: Note): boolean {
     return this.notes.some((n) => n.equals(note));
   }
+  // Calculate what scale degree a note is on the scale
+  degreeOf(note: Note): number {
+    const index = this.notes.findIndex((n) => n.equals(note));
+    if (index === -1) {
+      throw new Error(`Note ${note.name} is not in the scale`);
+    }
+    return index + 1;
+  }
 }
