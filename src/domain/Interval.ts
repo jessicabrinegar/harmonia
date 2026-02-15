@@ -71,17 +71,38 @@ export class Interval {
     [`${IntervalQuality.Diminished}-${IntervalDegree.Octave}`, 11],
   ]);
 
-  equals(other: Interval): boolean {
-    return this.quality === other.quality && this.degree === other.degree;
-  }
+  private static readonly QualityMap = new Map<
+    IntervalQuality,
+    IntervalQuality
+  >([
+    [IntervalQuality.Perfect, IntervalQuality.Perfect],
+    [IntervalQuality.Major, IntervalQuality.Minor],
+    [IntervalQuality.Augmented, IntervalQuality.Diminished],
+    [IntervalQuality.Minor, IntervalQuality.Major],
+    [IntervalQuality.Diminished, IntervalQuality.Augmented],
+  ]);
 
   get semitones(): number {
     const result = Interval.semitoneMap.get(`${this.quality}-${this.degree}`);
     if (result === undefined) {
       throw new Error(
-        `No semitone mapping for: ${this.quality} ${this.degree}`,
+        `Error getting semitone mapping for: ${this.quality} ${this.degree}`,
       );
     }
     return result;
+  }
+
+  equals(other: Interval): boolean {
+    return this.quality === other.quality && this.degree === other.degree;
+  }
+
+  invert(): Interval {
+    const invertDegree = (9 - this.degree) as IntervalDegree;
+    const invertQuality = Interval.QualityMap.get(this.quality);
+    if (!invertQuality)
+      throw new Error(
+        `Error getting inverse quality for interval quality ${this.quality}.`,
+      );
+    return new Interval(invertQuality, invertDegree);
   }
 }

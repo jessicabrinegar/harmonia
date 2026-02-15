@@ -51,4 +51,46 @@ describe("Interval", () => {
     const interval = new Interval(IntervalQuality.Major, IntervalDegree.Third);
     expect(interval.semitones).toBe(4);
   });
+
+  test("invert interval", () => {
+    const sourceInterval1 = new Interval(
+      IntervalQuality.Major,
+      IntervalDegree.Third,
+    );
+    const invertInterval1 = new Interval(
+      IntervalQuality.Minor,
+      IntervalDegree.Sixth,
+    );
+    const sourceInterval2 = new Interval(
+      IntervalQuality.Perfect,
+      IntervalDegree.Fifth,
+    );
+    const invertInterval2 = new Interval(
+      IntervalQuality.Perfect,
+      IntervalDegree.Fourth,
+    );
+    const sourceInterval3 = new Interval(
+      IntervalQuality.Augmented,
+      IntervalDegree.Fourth,
+    );
+    const invertInterval3 = new Interval(
+      IntervalQuality.Diminished,
+      IntervalDegree.Fifth,
+    );
+    const interval4 = new Interval(
+      IntervalQuality.Perfect,
+      IntervalDegree.Unison,
+    );
+    const interval5 = new Interval(
+      IntervalQuality.Perfect,
+      IntervalDegree.Octave,
+    );
+
+    expect(sourceInterval1.invert()).toEqual(invertInterval1);
+    expect(sourceInterval1.semitones + invertInterval1.semitones).toEqual(12);
+    expect(sourceInterval2.invert()).toEqual(invertInterval2);
+    expect(sourceInterval3.invert()).toEqual(invertInterval3);
+    expect(interval4.invert()).toEqual(interval5);
+    expect(interval5.invert()).toEqual(interval4);
+  });
 });
