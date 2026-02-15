@@ -93,4 +93,25 @@ describe("Interval", () => {
     expect(interval4.invert()).toEqual(interval5);
     expect(interval5.invert()).toEqual(interval4);
   });
+
+  test("isEnharmonicWith", () => {
+    const interval1 = new Interval(
+      IntervalQuality.Diminished,
+      IntervalDegree.Third,
+    );
+    const interval2 = new Interval(
+      IntervalQuality.Major,
+      IntervalDegree.Second,
+    );
+    const interval3 = new Interval(
+      IntervalQuality.Augmented,
+      IntervalDegree.Second,
+    );
+    const interval4 = new Interval(IntervalQuality.Minor, IntervalDegree.Third);
+
+    expect(interval1.isEnharmonicWith(interval2)).toBe(true);
+    expect(interval3.isEnharmonicWith(interval4)).toBe(true);
+    expect(interval1.isEnharmonicWith(interval3)).toBe(false);
+    expect(interval1.isEnharmonicWith(interval1)).toBe(false);
+  });
 });

@@ -105,4 +105,11 @@ export class Interval {
       );
     return new Interval(invertQuality, invertDegree);
   }
+
+  isEnharmonicWith(other: Interval): boolean {
+    if (this.equals(other)) {
+      return false;
+    }
+    return this.semitones === other.semitones;
+  }
 }
