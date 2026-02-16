@@ -1,4 +1,4 @@
-import { Note, NoteName } from "./Note";
+import { Note } from "./Note";
 
 export enum ScaleType {
   Major = "major", // Ionian
@@ -83,6 +83,9 @@ export class Scale {
   }
 
   mode(degree: number): Scale {
+    if (this.type !== ScaleType.Major) {
+      throw new Error("Can only get mode of a major scale.");
+    }
     if (degree < 1 || degree > 7)
       throw new Error("Degree must be between 1 and 7.");
     const startingNote = this.notes[degree - 1];

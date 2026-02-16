@@ -102,4 +102,10 @@ describe("Scale", () => {
     expect(scaleC.mode(1)).toEqual(scaleC);
     expect(scaleC.notes.every((n) => dorianD.contains(n))).toBe(true);
   });
+
+  test("throw when getting mode of non-major scale", () => {
+    const scale = new Scale(new Note(NoteName.C), ScaleType.MelodicMinor);
+
+    expect(() => scale.mode(2)).toThrow("Can only get mode of a major scale.");
+  });
 });
