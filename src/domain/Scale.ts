@@ -1,10 +1,15 @@
-import { Note } from "./Note";
+import { Note, NoteName } from "./Note";
 
 export enum ScaleType {
-  Major = "major",
+  Major = "major", // Ionian
   NaturalMinor = "natural_minor",
   HarmonicMinor = "harmonic_minor",
   MelodicMinor = "melodic_minor",
+  Dorian = "dorian",
+  Phrygian = "phrygian",
+  Lydian = "lydian",
+  Mixolydian = "mixolydian",
+  Locrian = "locrian",
 }
 
 export class Scale {
@@ -27,7 +32,22 @@ export class Scale {
     [ScaleType.NaturalMinor]: [0, 2, 3, 5, 7, 8, 10], //W-H-W-W-H-W-W
     [ScaleType.HarmonicMinor]: [0, 2, 3, 5, 7, 8, 11], //W-H-W-W-H-WH-H
     [ScaleType.MelodicMinor]: [0, 2, 3, 5, 7, 9, 11], //W-H-W-W-W-W-H
+    [ScaleType.Dorian]: [0, 2, 3, 5, 7, 9, 10], //W-H-W-W-W-H-W
+    [ScaleType.Phrygian]: [0, 1, 3, 5, 7, 8, 10], //H-W-W-W-H-W-W
+    [ScaleType.Lydian]: [0, 2, 4, 6, 7, 9, 11], //W-W-W-H-W-W-H
+    [ScaleType.Mixolydian]: [0, 2, 4, 5, 7, 9, 10], //W-W-H-W-W-H-W
+    [ScaleType.Locrian]: [0, 1, 3, 5, 6, 8, 10], //H-W-W-H-W-W-W
   };
+
+  private static readonly ModeMap = new Map<number, ScaleType>([
+    [1, ScaleType.Major], // Ionian
+    [2, ScaleType.Dorian],
+    [3, ScaleType.Phrygian],
+    [4, ScaleType.Lydian],
+    [5, ScaleType.Mixolydian],
+    [6, ScaleType.NaturalMinor], // Aeolian
+    [7, ScaleType.Locrian],
+  ]);
 
   get notes(): Note[] {
     const intervals = Scale.scaleIntervals[this.type];
@@ -60,5 +80,15 @@ export class Scale {
       throw new Error(`Note ${note.name} is not in the scale`);
     }
     return index + 1;
+  }
+
+  mode(degree: number): Scale {
+    if (degree < 1 || degree > 7)
+      throw new Error("Degree must be between 1 and 7.");
+    const startingNote = this.notes[degree - 1];
+    if (!startingNote) throw new Error("Unable to get starting note of mode.");
+    const scaleType = Scale.ModeMap.get(degree);
+    if (!scaleType) throw new Error("Unable to get scale type of mode.");
+    return new Scale(startingNote, scaleType);
   }
 }

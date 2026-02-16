@@ -91,4 +91,15 @@ describe("Scale", () => {
       "Note F# is not in the scale",
     );
   });
+
+  test("create mode scale", () => {
+    const scaleC = new Scale(new Note(NoteName.C), ScaleType.Major);
+    const dorianD = new Scale(new Note(NoteName.D), ScaleType.Dorian);
+    const lydianF = new Scale(new Note(NoteName.F), ScaleType.Lydian);
+
+    expect(scaleC.mode(2)).toEqual(dorianD);
+    expect(scaleC.mode(4)).toEqual(lydianF);
+    expect(scaleC.mode(1)).toEqual(scaleC);
+    expect(scaleC.notes.every((n) => dorianD.contains(n))).toBe(true);
+  });
 });
