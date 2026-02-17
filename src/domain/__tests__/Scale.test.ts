@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { ChordQuality } from "../Chord";
 import { Note, NoteName } from "../Note";
 import { Scale, ScaleType } from "../Scale";
 
@@ -158,5 +159,28 @@ describe("Scale", () => {
     expect(result._unsafeUnwrapErr().message).toBe(
       "Can only get mode of a major scale.",
     );
+  });
+
+  test("chordAt returns correct diatonic triads", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+
+    const chord1 = cMajor.chordAt(1)._unsafeUnwrap();
+    expect(chord1.root.name).toBe(NoteName.C);
+    expect(chord1.quality).toBe(ChordQuality.Major);
+
+    const chord2 = cMajor.chordAt(2)._unsafeUnwrap();
+    expect(chord2.root.name).toBe(NoteName.D);
+    expect(chord2.quality).toBe(ChordQuality.Minor);
+
+    const chord7 = cMajor.chordAt(7)._unsafeUnwrap();
+    expect(chord7.root.name).toBe(NoteName.B);
+    expect(chord7.quality).toBe(ChordQuality.Diminished);
+  });
+
+  test("chordAt returns err for invalid degree", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+
+    expect(cMajor.chordAt(0).isErr()).toBe(true);
+    expect(cMajor.chordAt(8).isErr()).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import { err, ok, Result } from "neverthrow";
+import { Chord, ChordQuality } from "./Chord";
 import { Note } from "./Note";
 
 export enum ScaleType {
@@ -33,6 +34,13 @@ export class Scale {
     [ScaleType.Mixolydian]: [0, 2, 4, 5, 7, 9, 10], //W-W-H-W-W-H-W
     [ScaleType.Locrian]: [0, 1, 3, 5, 6, 8, 10], //H-W-W-H-W-W-W
   };
+
+  private static readonly chordQualityMap = new Map<string, ChordQuality>([
+    ["4-7", ChordQuality.Major],
+    ["3-7", ChordQuality.Minor],
+    ["3-6", ChordQuality.Diminished],
+    ["4-8", ChordQuality.Augmented],
+  ]);
 
   private static readonly ModeMap = new Map<number, ScaleType>([
     [1, ScaleType.Major], // Ionian
@@ -85,6 +93,33 @@ export class Scale {
         return err(new Error(`Note ${note.name} is not in the scale`));
       }
       return ok(index + 1);
+    });
+  }
+
+  // Returns the diatonic triad chord built on the given degree of the scale
+  chordAt(degree: number): Result<Chord, Error> {
+    if (degree < 1 || degree > 7) {
+      return err(new Error("Degree must be between 1 and 7."));
+    }
+    return this.notes.andThen((notes) => {
+      const root = notes[degree - 1]!;
+      const third = notes[(degree - 1 + 2) % 7]!;
+      const fifth = notes[(degree - 1 + 4) % 7]!;
+
+      const thirdSemitones = (third.pitch - root.pitch + 12) % 12;
+      const fifthSemitones = (fifth.pitch - root.pitch + 12) % 12;
+
+      const quality = Scale.chordQualityMap.get(
+        `${thirdSemitones}-${fifthSemitones}`,
+      );
+      if (!quality) {
+        return err(
+          new Error(
+            `Unknown chord quality for intervals ${thirdSemitones}-${fifthSemitones}`,
+          ),
+        );
+      }
+      return Chord.create(root, quality);
     });
   }
 
