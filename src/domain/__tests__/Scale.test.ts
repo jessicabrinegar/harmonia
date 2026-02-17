@@ -48,6 +48,17 @@ describe("Scale", () => {
   test("get notes ensuring correct enharmonic spelling", () => {
     const fMajor = new Scale(new Note(NoteName.F), ScaleType.Major);
     const fNotes = fMajor.notes.map((note) => note.name);
+    const cHarmonicMinor = new Scale(
+      new Note(NoteName.C),
+      ScaleType.HarmonicMinor,
+    );
+    const cHarmMinorNotes = cHarmonicMinor.notes.map((note) => note.name);
+    const dMelodicMinor = new Scale(
+      new Note(NoteName.D),
+      ScaleType.MelodicMinor,
+    );
+    const dMelodMinorNotes = dMelodicMinor.notes.map((note) => note.name);
+
     expect(fNotes).toEqual([
       NoteName.F,
       NoteName.G,
@@ -56,6 +67,24 @@ describe("Scale", () => {
       NoteName.C,
       NoteName.D,
       NoteName.E,
+    ]);
+    expect(cHarmMinorNotes).toEqual([
+      NoteName.C,
+      NoteName.D,
+      NoteName.EFlat,
+      NoteName.F,
+      NoteName.G,
+      NoteName.AFlat,
+      NoteName.B,
+    ]);
+    expect(dMelodMinorNotes).toEqual([
+      NoteName.D,
+      NoteName.E,
+      NoteName.F,
+      NoteName.G,
+      NoteName.A,
+      NoteName.B,
+      NoteName.CSharp,
     ]);
   });
 
