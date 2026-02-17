@@ -26,4 +26,8 @@ export class Chord {
     }
     return ok(new Chord(root, quality));
   }
+
+  equals(other: Chord): boolean {
+    return this.quality === other.quality && this.root === other.root;
+  }
 }
