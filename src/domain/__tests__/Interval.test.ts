@@ -6,112 +6,136 @@ describe("Interval", () => {
     const quality = IntervalQuality.Major;
     const degree = IntervalDegree.Third;
 
-    const interval = new Interval(quality, degree);
-    expect(interval.quality).toBe(quality);
+    const result = Interval.create(quality, degree);
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().quality).toBe(quality);
   });
 
   test("fails when given an invalid quality", () => {
-    expect(
-      () =>
-        new Interval(
-          "InvalidQuality" as IntervalQuality,
-          IntervalDegree.Second,
-        ),
-    ).toThrow("Invalid interval quality: InvalidQuality");
+    const result = Interval.create(
+      "InvalidQuality" as IntervalQuality,
+      IntervalDegree.Second,
+    );
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toBe(
+      "Invalid interval quality: InvalidQuality",
+    );
   });
 
   test("fails when given an invalid degree", () => {
-    expect(
-      () => new Interval(IntervalQuality.Minor, 9 as IntervalDegree),
-    ).toThrow("Invalid interval degree: 9");
+    const result = Interval.create(IntervalQuality.Minor, 9 as IntervalDegree);
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toBe(
+      "Invalid interval degree: 9",
+    );
   });
 
   test("equality check", () => {
-    const interval1 = new Interval(
+    const interval1 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Fifth,
-    );
-    const interval2 = new Interval(
+    )._unsafeUnwrap();
+    const interval2 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Fifth,
-    );
-    const interval3 = new Interval(IntervalQuality.Major, IntervalDegree.Third);
+    )._unsafeUnwrap();
+    const interval3 = Interval.create(
+      IntervalQuality.Major,
+      IntervalDegree.Third,
+    )._unsafeUnwrap();
 
     expect(interval1.equals(interval2)).toBe(true);
     expect(interval1.equals(interval3)).toBe(false);
   });
 
-  test("throw for invalid combinations", () => {
-    expect(
-      () => new Interval(IntervalQuality.Perfect, IntervalDegree.Third),
-    ).toThrow();
+  test("err for invalid combinations", () => {
+    const result = Interval.create(
+      IntervalQuality.Perfect,
+      IntervalDegree.Third,
+    );
+    expect(result.isErr()).toBe(true);
   });
 
   test("return semitone distance", () => {
-    const interval = new Interval(IntervalQuality.Major, IntervalDegree.Third);
-    expect(interval.semitones).toBe(4);
+    const interval = Interval.create(
+      IntervalQuality.Major,
+      IntervalDegree.Third,
+    )._unsafeUnwrap();
+    expect(interval.semitones._unsafeUnwrap()).toBe(4);
   });
 
   test("invert interval", () => {
-    const sourceInterval1 = new Interval(
+    const sourceInterval1 = Interval.create(
       IntervalQuality.Major,
       IntervalDegree.Third,
-    );
-    const invertInterval1 = new Interval(
+    )._unsafeUnwrap();
+    const invertInterval1 = Interval.create(
       IntervalQuality.Minor,
       IntervalDegree.Sixth,
-    );
-    const sourceInterval2 = new Interval(
+    )._unsafeUnwrap();
+    const sourceInterval2 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Fifth,
-    );
-    const invertInterval2 = new Interval(
+    )._unsafeUnwrap();
+    const invertInterval2 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Fourth,
-    );
-    const sourceInterval3 = new Interval(
+    )._unsafeUnwrap();
+    const sourceInterval3 = Interval.create(
       IntervalQuality.Augmented,
       IntervalDegree.Fourth,
-    );
-    const invertInterval3 = new Interval(
+    )._unsafeUnwrap();
+    const invertInterval3 = Interval.create(
       IntervalQuality.Diminished,
       IntervalDegree.Fifth,
-    );
-    const interval4 = new Interval(
+    )._unsafeUnwrap();
+    const interval4 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Unison,
-    );
-    const interval5 = new Interval(
+    )._unsafeUnwrap();
+    const interval5 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Octave,
-    );
+    )._unsafeUnwrap();
 
-    expect(sourceInterval1.invert()).toEqual(invertInterval1);
-    expect(sourceInterval1.semitones + invertInterval1.semitones).toEqual(12);
-    expect(sourceInterval2.invert()).toEqual(invertInterval2);
-    expect(sourceInterval3.invert()).toEqual(invertInterval3);
-    expect(interval4.invert()).toEqual(interval5);
-    expect(interval5.invert()).toEqual(interval4);
+    expect(
+      sourceInterval1.invert()._unsafeUnwrap().equals(invertInterval1),
+    ).toBe(true);
+    expect(
+      sourceInterval1.semitones._unsafeUnwrap() +
+        invertInterval1.semitones._unsafeUnwrap(),
+    ).toEqual(12);
+    expect(
+      sourceInterval2.invert()._unsafeUnwrap().equals(invertInterval2),
+    ).toBe(true);
+    expect(
+      sourceInterval3.invert()._unsafeUnwrap().equals(invertInterval3),
+    ).toBe(true);
+    expect(interval4.invert()._unsafeUnwrap().equals(interval5)).toBe(true);
+    expect(interval5.invert()._unsafeUnwrap().equals(interval4)).toBe(true);
   });
 
   test("isEnharmonicWith", () => {
-    const interval1 = new Interval(
+    const interval1 = Interval.create(
       IntervalQuality.Diminished,
       IntervalDegree.Third,
-    );
-    const interval2 = new Interval(
+    )._unsafeUnwrap();
+    const interval2 = Interval.create(
       IntervalQuality.Major,
       IntervalDegree.Second,
-    );
-    const interval3 = new Interval(
+    )._unsafeUnwrap();
+    const interval3 = Interval.create(
       IntervalQuality.Augmented,
       IntervalDegree.Second,
-    );
-    const interval4 = new Interval(IntervalQuality.Minor, IntervalDegree.Third);
+    )._unsafeUnwrap();
+    const interval4 = Interval.create(
+      IntervalQuality.Minor,
+      IntervalDegree.Third,
+    )._unsafeUnwrap();
 
-    expect(interval1.isEnharmonicWith(interval2)).toBe(true);
-    expect(interval3.isEnharmonicWith(interval4)).toBe(true);
-    expect(interval1.isEnharmonicWith(interval3)).toBe(false);
-    expect(interval1.isEnharmonicWith(interval1)).toBe(false);
+    expect(interval1.isEnharmonicWith(interval2)._unsafeUnwrap()).toBe(true);
+    expect(interval3.isEnharmonicWith(interval4)._unsafeUnwrap()).toBe(true);
+    expect(interval1.isEnharmonicWith(interval3)._unsafeUnwrap()).toBe(false);
+    expect(interval1.isEnharmonicWith(interval1)._unsafeUnwrap()).toBe(false);
   });
 });

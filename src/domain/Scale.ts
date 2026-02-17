@@ -1,3 +1,4 @@
+import { err, ok, Result } from "neverthrow";
 import { Note } from "./Note";
 
 export enum ScaleType {
@@ -13,13 +14,7 @@ export enum ScaleType {
 }
 
 export class Scale {
-  constructor(root: Note, type: ScaleType) {
-    if (!Object.values(ScaleType).includes(type)) {
-      throw new Error(`Invalid scale type: ${type}`);
-    }
-    if (!root) {
-      throw new Error("Root note is required for a scale");
-    }
+  private constructor(root: Note, type: ScaleType) {
     this.root = root;
     this.type = type;
   }
@@ -49,49 +44,67 @@ export class Scale {
     [7, ScaleType.Locrian],
   ]);
 
-  get notes(): Note[] {
+  static create(root: Note, type: ScaleType): Result<Scale, Error> {
+    if (!Object.values(ScaleType).includes(type)) {
+      return err(new Error(`Invalid scale type: ${type}`));
+    }
+    if (!root) {
+      return err(new Error("Root note is required for a scale"));
+    }
+    return ok(new Scale(root, type));
+  }
+
+  get notes(): Result<Note[], Error> {
     const intervals = Scale.scaleIntervals[this.type];
     const indexOfRoot = Note.letterCycle.indexOf(this.root.baseLetter);
-    const notes: Note[] = [];
-    for (let i = 0; i < intervals.length; i++) {
+
+    const results = intervals.map((semitoneOffset, i) => {
       const noteLetter = Note.letterCycle[(indexOfRoot + i) % 7];
-      const semitoneOffset = intervals[i];
-      if (noteLetter === undefined || semitoneOffset === undefined) {
-        throw new Error(`Invalid scale degree index: ${i}`);
+      if (noteLetter === undefined) {
+        return err(new Error(`Invalid scale degree index: ${i}`));
       }
       const pitch = (this.root.pitch + semitoneOffset) % 12;
-      const noteName = Note.getNoteName(noteLetter, pitch);
-      notes.push(new Note(noteName));
-    }
-    return notes;
+      return Note.getNoteName(noteLetter, pitch).andThen(Note.create);
+    });
+
+    return Result.combine(results);
   }
 
   equals(other: Scale): boolean {
     return this.root.equals(other.root) && this.type === other.type;
   }
 
-  contains(note: Note): boolean {
-    return this.notes.some((n) => n.equals(note));
-  }
-  // Calculate what scale degree a note is on the scale
-  degreeOf(note: Note): number {
-    const index = this.notes.findIndex((n) => n.equals(note));
-    if (index === -1) {
-      throw new Error(`Note ${note.name} is not in the scale`);
-    }
-    return index + 1;
+  contains(note: Note): Result<boolean, Error> {
+    return this.notes.map((notes) => notes.some((n) => n.equals(note)));
   }
 
-  mode(degree: number): Scale {
+  degreeOf(note: Note): Result<number, Error> {
+    return this.notes.andThen((notes) => {
+      const index = notes.findIndex((n) => n.equals(note));
+      if (index === -1) {
+        return err(new Error(`Note ${note.name} is not in the scale`));
+      }
+      return ok(index + 1);
+    });
+  }
+
+  mode(degree: number): Result<Scale, Error> {
     if (this.type !== ScaleType.Major) {
-      throw new Error("Can only get mode of a major scale.");
+      return err(new Error("Can only get mode of a major scale."));
     }
-    if (degree < 1 || degree > 7)
-      throw new Error("Degree must be between 1 and 7.");
-    const startingNote = this.notes[degree - 1];
-    if (!startingNote) throw new Error("Unable to get starting note of mode.");
-    const scaleType = Scale.ModeMap.get(degree);
-    if (!scaleType) throw new Error("Unable to get scale type of mode.");
-    return new Scale(startingNote, scaleType);
+    if (degree < 1 || degree > 7) {
+      return err(new Error("Degree must be between 1 and 7."));
+    }
+    return this.notes.andThen((notes) => {
+      const startingNote = notes[degree - 1];
+      if (!startingNote) {
+        return err(new Error("Unable to get starting note of mode."));
+      }
+      const scaleType = Scale.ModeMap.get(degree);
+      if (!scaleType) {
+        return err(new Error("Unable to get scale type of mode."));
+      }
+      return ok(new Scale(startingNote, scaleType));
+    });
   }
 }

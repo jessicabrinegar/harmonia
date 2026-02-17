@@ -1,3 +1,5 @@
+import { err, ok, type Result } from "neverthrow";
+
 export enum IntervalQuality {
   Perfect = "Perfect",
   Major = "Major",
@@ -18,16 +20,7 @@ export enum IntervalDegree {
 }
 
 export class Interval {
-  constructor(quality: IntervalQuality, degree: IntervalDegree) {
-    if (!Object.values(IntervalQuality).includes(quality)) {
-      throw new Error(`Invalid interval quality: ${quality}`);
-    }
-    if (!Object.values(IntervalDegree).includes(degree)) {
-      throw new Error(`Invalid interval degree: ${degree}`);
-    }
-    if (!Interval.semitoneMap.has(`${quality}-${degree}`)) {
-      throw new Error(`Invalid interval combination: ${quality} ${degree}`);
-    }
+  private constructor(quality: IntervalQuality, degree: IntervalDegree) {
     this.quality = quality;
     this.degree = degree;
   }
@@ -82,34 +75,56 @@ export class Interval {
     [IntervalQuality.Diminished, IntervalQuality.Augmented],
   ]);
 
-  get semitones(): number {
-    const result = Interval.semitoneMap.get(`${this.quality}-${this.degree}`);
-    if (result === undefined) {
-      throw new Error(
-        `Error getting semitone mapping for: ${this.quality} ${this.degree}`,
+  static create(
+    quality: IntervalQuality,
+    degree: IntervalDegree,
+  ): Result<Interval, Error> {
+    if (!Object.values(IntervalQuality).includes(quality)) {
+      return err(new Error(`Invalid interval quality: ${quality}`));
+    }
+    if (!Object.values(IntervalDegree).includes(degree)) {
+      return err(new Error(`Invalid interval degree: ${degree}`));
+    }
+    if (!Interval.semitoneMap.has(`${quality}-${degree}`)) {
+      return err(
+        new Error(`Invalid interval combination: ${quality} ${degree}`),
       );
     }
-    return result;
+    return ok(new Interval(quality, degree));
+  }
+
+  get semitones(): Result<number, Error> {
+    const result = Interval.semitoneMap.get(`${this.quality}-${this.degree}`);
+    if (result === undefined) {
+      return err(
+        new Error(
+          `Error getting semitone mapping for: ${this.quality} ${this.degree}`,
+        ),
+      );
+    }
+    return ok(result);
   }
 
   equals(other: Interval): boolean {
     return this.quality === other.quality && this.degree === other.degree;
   }
 
-  invert(): Interval {
+  invert(): Result<Interval, Error> {
     const invertDegree = (9 - this.degree) as IntervalDegree;
     const invertQuality = Interval.QualityMap.get(this.quality);
     if (!invertQuality)
-      throw new Error(
-        `Error getting inverse quality for interval quality ${this.quality}.`,
+      return err(
+        new Error(
+          `Error getting inverse quality for interval quality ${this.quality}.`,
+        ),
       );
-    return new Interval(invertQuality, invertDegree);
+    return ok(new Interval(invertQuality, invertDegree));
   }
 
-  isEnharmonicWith(other: Interval): boolean {
+  isEnharmonicWith(other: Interval): Result<boolean, Error> {
     if (this.equals(other)) {
-      return false;
+      return ok(false);
     }
-    return this.semitones === other.semitones;
+    return this.semitones.andThen((a) => other.semitones.map((b) => a === b));
   }
 }

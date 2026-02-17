@@ -2,28 +2,45 @@ import { describe, expect, test } from "bun:test";
 import { Note, NoteName } from "../Note";
 import { Scale, ScaleType } from "../Scale";
 
+function note(name: NoteName): Note {
+  return Note.create(name)._unsafeUnwrap();
+}
+
+function scale(root: Note, type: ScaleType): Scale {
+  return Scale.create(root, type)._unsafeUnwrap();
+}
+
 describe("Scale", () => {
   test("create a scale with valid root and type", () => {
-    const root = new Note(NoteName.C);
-    const scale = new Scale(root, ScaleType.Major);
-    expect(scale.root).toBe(root);
-    expect(scale.type).toBe(ScaleType.Major);
+    const root = note(NoteName.C);
+    const result = Scale.create(root, ScaleType.Major);
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().root).toBe(root);
+    expect(result._unsafeUnwrap().type).toBe(ScaleType.Major);
   });
 
   test("fails when given an invalid input", () => {
-    expect(
-      () => new Scale(new Note(NoteName.C), "invalid_type" as ScaleType),
-    ).toThrow("Invalid scale type: invalid_type");
-    expect(() => new Scale(null as unknown as Note, ScaleType.Major)).toThrow(
+    const invalidType = Scale.create(
+      note(NoteName.C),
+      "invalid_type" as ScaleType,
+    );
+    expect(invalidType.isErr()).toBe(true);
+    expect(invalidType._unsafeUnwrapErr().message).toBe(
+      "Invalid scale type: invalid_type",
+    );
+
+    const nullRoot = Scale.create(null as unknown as Note, ScaleType.Major);
+    expect(nullRoot.isErr()).toBe(true);
+    expect(nullRoot._unsafeUnwrapErr().message).toBe(
       "Root note is required for a scale",
     );
   });
 
   test("get notes of a scale", () => {
-    const cMajor = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const bMinor = new Scale(new Note(NoteName.B), ScaleType.NaturalMinor);
-    const cNotes = cMajor.notes.map((note) => note.name);
-    const bMinorNotes = bMinor.notes.map((note) => note.name);
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const bMinor = scale(note(NoteName.B), ScaleType.NaturalMinor);
+    const cNotes = cMajor.notes._unsafeUnwrap().map((n) => n.name);
+    const bMinorNotes = bMinor.notes._unsafeUnwrap().map((n) => n.name);
 
     expect(cNotes).toEqual([
       NoteName.C,
@@ -46,18 +63,16 @@ describe("Scale", () => {
   });
 
   test("get notes ensuring correct enharmonic spelling", () => {
-    const fMajor = new Scale(new Note(NoteName.F), ScaleType.Major);
-    const fNotes = fMajor.notes.map((note) => note.name);
-    const cHarmonicMinor = new Scale(
-      new Note(NoteName.C),
-      ScaleType.HarmonicMinor,
-    );
-    const cHarmMinorNotes = cHarmonicMinor.notes.map((note) => note.name);
-    const dMelodicMinor = new Scale(
-      new Note(NoteName.D),
-      ScaleType.MelodicMinor,
-    );
-    const dMelodMinorNotes = dMelodicMinor.notes.map((note) => note.name);
+    const fMajor = scale(note(NoteName.F), ScaleType.Major);
+    const fNotes = fMajor.notes._unsafeUnwrap().map((n) => n.name);
+    const cHarmonicMinor = scale(note(NoteName.C), ScaleType.HarmonicMinor);
+    const cHarmMinorNotes = cHarmonicMinor.notes
+      ._unsafeUnwrap()
+      .map((n) => n.name);
+    const dMelodicMinor = scale(note(NoteName.D), ScaleType.MelodicMinor);
+    const dMelodMinorNotes = dMelodicMinor.notes
+      ._unsafeUnwrap()
+      .map((n) => n.name);
 
     expect(fNotes).toEqual([
       NoteName.F,
@@ -89,10 +104,10 @@ describe("Scale", () => {
   });
 
   test("compare scales for equality", () => {
-    const cMajor1 = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const cMajor2 = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const dMajor = new Scale(new Note(NoteName.D), ScaleType.Major);
-    const cMinor = new Scale(new Note(NoteName.C), ScaleType.NaturalMinor);
+    const cMajor1 = scale(note(NoteName.C), ScaleType.Major);
+    const cMajor2 = scale(note(NoteName.C), ScaleType.Major);
+    const dMajor = scale(note(NoteName.D), ScaleType.Major);
+    const cMinor = scale(note(NoteName.C), ScaleType.NaturalMinor);
 
     expect(cMajor1.equals(cMajor2)).toBe(true);
     expect(cMajor1.equals(dMajor)).toBe(false);
@@ -100,41 +115,48 @@ describe("Scale", () => {
   });
 
   test("check if scale contains specific note", () => {
-    const cMajorScale = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const dSharp = new Note(NoteName.DSharp);
-    const e = new Note(NoteName.E);
+    const cMajorScale = scale(note(NoteName.C), ScaleType.Major);
 
-    expect(cMajorScale.contains(dSharp)).toBe(false);
-    expect(cMajorScale.contains(e)).toBe(true);
+    expect(cMajorScale.contains(note(NoteName.DSharp))._unsafeUnwrap()).toBe(
+      false,
+    );
+    expect(cMajorScale.contains(note(NoteName.E))._unsafeUnwrap()).toBe(true);
   });
 
   test("get degree of a note in the scale", () => {
-    const cMajorScale = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const d = new Note(NoteName.D);
-    const e = new Note(NoteName.E);
-    const fSharp = new Note(NoteName.FSharp);
+    const cMajorScale = scale(note(NoteName.C), ScaleType.Major);
 
-    expect(cMajorScale.degreeOf(d)).toBe(2);
-    expect(cMajorScale.degreeOf(e)).toBe(3);
-    expect(() => cMajorScale.degreeOf(fSharp)).toThrow(
+    expect(cMajorScale.degreeOf(note(NoteName.D))._unsafeUnwrap()).toBe(2);
+    expect(cMajorScale.degreeOf(note(NoteName.E))._unsafeUnwrap()).toBe(3);
+
+    const result = cMajorScale.degreeOf(note(NoteName.FSharp));
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toBe(
       "Note F# is not in the scale",
     );
   });
 
   test("create mode scale", () => {
-    const scaleC = new Scale(new Note(NoteName.C), ScaleType.Major);
-    const dorianD = new Scale(new Note(NoteName.D), ScaleType.Dorian);
-    const lydianF = new Scale(new Note(NoteName.F), ScaleType.Lydian);
+    const scaleC = scale(note(NoteName.C), ScaleType.Major);
+    const dorianD = scale(note(NoteName.D), ScaleType.Dorian);
+    const lydianF = scale(note(NoteName.F), ScaleType.Lydian);
 
-    expect(scaleC.mode(2)).toEqual(dorianD);
-    expect(scaleC.mode(4)).toEqual(lydianF);
-    expect(scaleC.mode(1)).toEqual(scaleC);
-    expect(scaleC.notes.every((n) => dorianD.contains(n))).toBe(true);
+    expect(scaleC.mode(2)._unsafeUnwrap().equals(dorianD)).toBe(true);
+    expect(scaleC.mode(4)._unsafeUnwrap().equals(lydianF)).toBe(true);
+    expect(scaleC.mode(1)._unsafeUnwrap().equals(scaleC)).toBe(true);
+    expect(
+      scaleC.notes
+        ._unsafeUnwrap()
+        .every((n) => dorianD.contains(n)._unsafeUnwrap()),
+    ).toBe(true);
   });
 
-  test("throw when getting mode of non-major scale", () => {
-    const scale = new Scale(new Note(NoteName.C), ScaleType.MelodicMinor);
-
-    expect(() => scale.mode(2)).toThrow("Can only get mode of a major scale.");
+  test("err when getting mode of non-major scale", () => {
+    const s = scale(note(NoteName.C), ScaleType.MelodicMinor);
+    const result = s.mode(2);
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toBe(
+      "Can only get mode of a major scale.",
+    );
   });
 });

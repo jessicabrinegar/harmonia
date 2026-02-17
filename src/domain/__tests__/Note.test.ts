@@ -2,72 +2,79 @@ import { describe, expect, test } from "bun:test";
 import { Interval, IntervalDegree, IntervalQuality } from "../Interval";
 import { Note, NoteName } from "../Note";
 
+function note(name: NoteName): Note {
+  return Note.create(name)._unsafeUnwrap();
+}
+
 describe("Note", () => {
   test("create note with a name", () => {
-    const note = new Note(NoteName.C);
-    expect(note.name).toBe(NoteName.C);
+    const result = Note.create(NoteName.C);
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap().name).toBe(NoteName.C);
   });
 
-  test("create note with invalid name should throw error", () => {
+  test("create note with invalid name should return err", () => {
     // @ts-expect-error
-    expect(() => new Note("Z")).toThrow();
+    const result = Note.create("Z");
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().message).toBe("Invalid note name: Z");
   });
 
   test("notes with same name should be equal", () => {
-    const note1 = new Note(NoteName.D);
-    const note2 = new Note(NoteName.D);
-    expect(note1.equals(note2)).toBe(true);
+    expect(note(NoteName.D).equals(note(NoteName.D))).toBe(true);
   });
 
   test("notes with different names should not be equal", () => {
-    const note1 = new Note(NoteName.E);
-    const note2 = new Note(NoteName.F);
-    expect(note1.equals(note2)).toBe(false);
+    expect(note(NoteName.E).equals(note(NoteName.F))).toBe(false);
   });
 
   test("check enharmonic equivalence for non-match", () => {
-    const note1 = new Note(NoteName.CSharp);
-    const note2 = new Note(NoteName.EFlat);
-    expect(note1.isEnharmonicWith(note2)).toBe(false);
+    expect(note(NoteName.CSharp).isEnharmonicWith(note(NoteName.EFlat))).toBe(
+      false,
+    );
   });
 
   test("check enharmonic equivalence for match", () => {
-    const note1 = new Note(NoteName.CSharp);
-    const note2 = new Note(NoteName.DFlat);
-    expect(note1.isEnharmonicWith(note2)).toBe(true);
+    expect(note(NoteName.CSharp).isEnharmonicWith(note(NoteName.DFlat))).toBe(
+      true,
+    );
   });
 
   test("get base letter from a Note", () => {
-    const note = new Note(NoteName.FSharp);
-    expect(note.baseLetter).toBe("F");
+    expect(note(NoteName.FSharp).baseLetter).toBe("F");
   });
 
   test("get note name from base letter and pitch", () => {
-    const noteName = Note.getNoteName("C", 1);
-    expect(noteName).toBe(NoteName.CSharp);
+    const result = Note.getNoteName("C", 1);
+    expect(result._unsafeUnwrap()).toBe(NoteName.CSharp);
   });
 
   test("get pitch from a Note", () => {
-    const note = new Note(NoteName.G);
-    expect(note.pitch).toBe(7);
+    expect(note(NoteName.G).pitch).toBe(7);
   });
 
   test("transpose a note by an interval", () => {
-    const note1 = new Note(NoteName.C);
-    const interval1 = new Interval(IntervalQuality.Major, IntervalDegree.Third);
-    const transposedNote1 = new Note(NoteName.E);
-    const note2 = new Note(NoteName.G);
-    const interval2 = new Interval(
+    const interval1 = Interval.create(
+      IntervalQuality.Major,
+      IntervalDegree.Third,
+    )._unsafeUnwrap();
+    const interval2 = Interval.create(
       IntervalQuality.Perfect,
       IntervalDegree.Fifth,
-    );
-    const transposedNote2 = new Note(NoteName.D);
-    const note3 = new Note(NoteName.C);
-    const interval3 = new Interval(IntervalQuality.Minor, IntervalDegree.Third);
-    const transposedNote3 = new Note(NoteName.EFlat);
+    )._unsafeUnwrap();
+    const interval3 = Interval.create(
+      IntervalQuality.Minor,
+      IntervalDegree.Third,
+    )._unsafeUnwrap();
 
-    expect(note1.transpose(interval1)).toEqual(transposedNote1);
-    expect(note2.transpose(interval2)).toEqual(transposedNote2);
-    expect(note3.transpose(interval3)).toEqual(transposedNote3);
+    expect(note(NoteName.C).transpose(interval1)._unsafeUnwrap()).toEqual(
+      note(NoteName.E),
+    );
+    expect(note(NoteName.G).transpose(interval2)._unsafeUnwrap()).toEqual(
+      note(NoteName.D),
+    );
+    expect(note(NoteName.C).transpose(interval3)._unsafeUnwrap()).toEqual(
+      note(NoteName.EFlat),
+    );
   });
 });
