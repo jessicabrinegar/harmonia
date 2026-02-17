@@ -84,9 +84,9 @@ export class Note {
     return this.name.charAt(0);
   }
 
-  // Safe: create() validates name is in NoteName enum, PITCH_MAP covers all NoteName values
   get pitch(): number {
-    return Note.PITCH_MAP.get(this.name)!;
+    // Safe: create() validates name is in NoteName enum, PITCH_MAP covers all NoteName values
+    return Note.PITCH_MAP.get(this.name) ?? 0;
   }
 
   transpose(interval: Interval): Result<Note, Error> {

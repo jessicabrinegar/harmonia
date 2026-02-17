@@ -199,8 +199,8 @@ describe("Scale", () => {
 
     for (let i = 0; i < expected.length; i++) {
       const chord = cMajor.chordAt(i + 1, 4)._unsafeUnwrap();
-      expect(chord.root.name).toBe(expected[i]![0]);
-      expect(chord.quality).toBe(expected[i]![1]);
+      expect(chord.root.name).toBe(expected[i]?.[0]);
+      expect(chord.quality).toBe(expected[i]?.[1]);
     }
   });
 
