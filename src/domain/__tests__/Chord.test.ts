@@ -28,4 +28,56 @@ describe("Chord", () => {
       expect(result.value.equals(result2.value)).toBe(true);
     }
   });
+
+  test("get notes of a major chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.C,
+      NoteName.E,
+      NoteName.G,
+    ]);
+  });
+
+  test("get notes of a minor chord", () => {
+    const chord = Chord.create(
+      note(NoteName.A),
+      ChordQuality.Minor,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.A,
+      NoteName.C,
+      NoteName.E,
+    ]);
+  });
+
+  test("get notes of a diminished chord", () => {
+    const chord = Chord.create(
+      note(NoteName.B),
+      ChordQuality.Diminished,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.B,
+      NoteName.D,
+      NoteName.F,
+    ]);
+  });
+
+  test("get notes of an augmented chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Augmented,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.C,
+      NoteName.E,
+      NoteName.GSharp,
+    ]);
+  });
 });
