@@ -7,6 +7,13 @@ export enum ChordQuality {
   Minor = "minor",
   Diminished = "diminished",
   Augmented = "augmented",
+  Major7 = "major7",
+  Minor7 = "minor7",
+  Dominant7 = "dominant7",
+  HalfDiminished7 = "half_diminished7",
+  Diminished7 = "diminished7",
+  MinorMajor7 = "minor_major7",
+  AugmentedMajor7 = "augmented_major7",
 }
 
 export class Chord {
@@ -48,6 +55,62 @@ export class Chord {
       [
         [IntervalQuality.Major, IntervalDegree.Third],
         [IntervalQuality.Augmented, IntervalDegree.Fifth],
+      ],
+    ],
+    [
+      ChordQuality.Major7,
+      [
+        [IntervalQuality.Major, IntervalDegree.Third],
+        [IntervalQuality.Perfect, IntervalDegree.Fifth],
+        [IntervalQuality.Major, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.Minor7,
+      [
+        [IntervalQuality.Minor, IntervalDegree.Third],
+        [IntervalQuality.Perfect, IntervalDegree.Fifth],
+        [IntervalQuality.Minor, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.Dominant7,
+      [
+        [IntervalQuality.Major, IntervalDegree.Third],
+        [IntervalQuality.Perfect, IntervalDegree.Fifth],
+        [IntervalQuality.Minor, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.HalfDiminished7,
+      [
+        [IntervalQuality.Minor, IntervalDegree.Third],
+        [IntervalQuality.Diminished, IntervalDegree.Fifth],
+        [IntervalQuality.Minor, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.Diminished7,
+      [
+        [IntervalQuality.Minor, IntervalDegree.Third],
+        [IntervalQuality.Diminished, IntervalDegree.Fifth],
+        [IntervalQuality.Diminished, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.MinorMajor7,
+      [
+        [IntervalQuality.Minor, IntervalDegree.Third],
+        [IntervalQuality.Perfect, IntervalDegree.Fifth],
+        [IntervalQuality.Major, IntervalDegree.Seventh],
+      ],
+    ],
+    [
+      ChordQuality.AugmentedMajor7,
+      [
+        [IntervalQuality.Major, IntervalDegree.Third],
+        [IntervalQuality.Augmented, IntervalDegree.Fifth],
+        [IntervalQuality.Major, IntervalDegree.Seventh],
       ],
     ],
   ]);

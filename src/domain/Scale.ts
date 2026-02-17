@@ -40,6 +40,13 @@ export class Scale {
     ["3-7", ChordQuality.Minor],
     ["3-6", ChordQuality.Diminished],
     ["4-8", ChordQuality.Augmented],
+    ["4-7-11", ChordQuality.Major7],
+    ["3-7-10", ChordQuality.Minor7],
+    ["4-7-10", ChordQuality.Dominant7],
+    ["3-6-10", ChordQuality.HalfDiminished7],
+    ["3-6-9", ChordQuality.Diminished7],
+    ["3-7-11", ChordQuality.MinorMajor7],
+    ["4-8-11", ChordQuality.AugmentedMajor7],
   ]);
 
   private static readonly ModeMap = new Map<number, ScaleType>([
@@ -96,28 +103,27 @@ export class Scale {
     });
   }
 
-  // Returns the diatonic triad chord built on the given degree of the scale
-  chordAt(degree: number): Result<Chord, Error> {
+  // Returns the diatonic chord built on the given degree of the scale.
+  // noteCount = 3 for triads, 4 for seventh chords, etc.
+  chordAt(degree: number, noteCount: number = 3): Result<Chord, Error> {
     if (degree < 1 || degree > 7) {
       return err(new Error("Degree must be between 1 and 7."));
     }
+    if (noteCount < 3) {
+      return err(new Error("noteCount must be at least 3."));
+    }
     return this.notes.andThen((notes) => {
       const root = notes[degree - 1]!;
-      const third = notes[(degree - 1 + 2) % 7]!;
-      const fifth = notes[(degree - 1 + 4) % 7]!;
+      const semitones: number[] = [];
+      for (let i = 1; i < noteCount; i++) {
+        const note = notes[(degree - 1 + i * 2) % 7]!;
+        semitones.push((note.pitch - root.pitch + 12) % 12);
+      }
 
-      const thirdSemitones = (third.pitch - root.pitch + 12) % 12;
-      const fifthSemitones = (fifth.pitch - root.pitch + 12) % 12;
-
-      const quality = Scale.chordQualityMap.get(
-        `${thirdSemitones}-${fifthSemitones}`,
-      );
+      const key = semitones.join("-");
+      const quality = Scale.chordQualityMap.get(key);
       if (!quality) {
-        return err(
-          new Error(
-            `Unknown chord quality for intervals ${thirdSemitones}-${fifthSemitones}`,
-          ),
-        );
+        return err(new Error(`Unknown chord quality for intervals ${key}`));
       }
       return Chord.create(root, quality);
     });

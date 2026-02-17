@@ -183,4 +183,42 @@ describe("Scale", () => {
     expect(cMajor.chordAt(0).isErr()).toBe(true);
     expect(cMajor.chordAt(8).isErr()).toBe(true);
   });
+
+  test("chordAt returns correct diatonic seventh chords for C Major", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+
+    const expected: [NoteName, ChordQuality][] = [
+      [NoteName.C, ChordQuality.Major7], // I: Cmaj7
+      [NoteName.D, ChordQuality.Minor7], // ii: Dm7
+      [NoteName.E, ChordQuality.Minor7], // iii: Em7
+      [NoteName.F, ChordQuality.Major7], // IV: Fmaj7
+      [NoteName.G, ChordQuality.Dominant7], // V: G7
+      [NoteName.A, ChordQuality.Minor7], // vi: Am7
+      [NoteName.B, ChordQuality.HalfDiminished7], // vii: Bm7b5
+    ];
+
+    for (let i = 0; i < expected.length; i++) {
+      const chord = cMajor.chordAt(i + 1, 4)._unsafeUnwrap();
+      expect(chord.root.name).toBe(expected[i]![0]);
+      expect(chord.quality).toBe(expected[i]![1]);
+    }
+  });
+
+  test("chordAt with noteCount 4 on C Harmonic Minor degree 1 returns MinorMajor7", () => {
+    const cHarmonicMinor = scale(note(NoteName.C), ScaleType.HarmonicMinor);
+    const chord = cHarmonicMinor.chordAt(1, 4)._unsafeUnwrap();
+    expect(chord.root.name).toBe(NoteName.C);
+    expect(chord.quality).toBe(ChordQuality.MinorMajor7);
+  });
+
+  test("chordAt with noteCount defaults to triads", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const chord = cMajor.chordAt(1)._unsafeUnwrap();
+    expect(chord.quality).toBe(ChordQuality.Major);
+  });
+
+  test("chordAt returns err for noteCount less than 3", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    expect(cMajor.chordAt(1, 2).isErr()).toBe(true);
+  });
 });
