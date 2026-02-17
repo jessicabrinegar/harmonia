@@ -113,10 +113,18 @@ export class Scale {
       return err(new Error("noteCount must be at least 3."));
     }
     return this.notes.andThen((notes) => {
-      const root = notes[degree - 1]!;
+      const root = notes[degree - 1];
+      if (!root) {
+        return err(new Error(`Invalid degree: ${degree}`));
+      }
       const semitones: number[] = [];
       for (let i = 1; i < noteCount; i++) {
-        const note = notes[(degree - 1 + i * 2) % 7]!;
+        const note = notes[(degree - 1 + i * 2) % 7];
+        if (!note) {
+          return err(
+            new Error(`Invalid chord note index for degree ${degree}`),
+          );
+        }
         semitones.push((note.pitch - root.pitch + 12) % 12);
       }
 
