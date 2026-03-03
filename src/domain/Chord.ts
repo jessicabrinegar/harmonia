@@ -17,13 +17,19 @@ export enum ChordQuality {
 }
 
 export class Chord {
-  private constructor(root: Note, quality: ChordQuality) {
+  private constructor(
+    root: Note,
+    quality: ChordQuality,
+    inversion: number = 0,
+  ) {
     this.root = root;
     this.quality = quality;
+    this.inversion = inversion;
   }
 
   readonly root: Note;
   readonly quality: ChordQuality;
+  readonly inversion: number = 0;
 
   private static readonly chordIntervals = new Map<
     ChordQuality,
@@ -115,18 +121,35 @@ export class Chord {
     ],
   ]);
 
-  static create(root: Note, quality: ChordQuality): Result<Chord, Error> {
-    if (!Object.values(ChordQuality).includes(quality)) {
-      return err(new Error("Invalid chord quality value."));
-    }
+  static create(
+    root: Note,
+    quality: ChordQuality,
+    inversion: number = 0,
+  ): Result<Chord, Error> {
     if (!root || !quality) {
       return err(new Error("Root note and chord quality must be provided."));
     }
-    return ok(new Chord(root, quality));
+    if (!Object.values(ChordQuality).includes(quality)) {
+      return err(new Error("Invalid chord quality value."));
+    }
+    const intervals = Chord.chordIntervals.get(quality);
+    if (!intervals) {
+      return err(
+        new Error("No interval data found for the specified chord quality."),
+      );
+    }
+    if (inversion < 0 || inversion > intervals.length) {
+      return err(new Error("Invalid inversion value for chord."));
+    }
+    return ok(new Chord(root, quality, inversion));
   }
 
   equals(other: Chord): boolean {
-    return this.quality === other.quality && this.root === other.root;
+    return (
+      this.quality === other.quality &&
+      this.root === other.root &&
+      this.inversion === other.inversion
+    );
   }
 
   get notes(): Result<Note[], Error> {
@@ -147,6 +170,71 @@ export class Chord {
       }
       transposedNotes.push(transposedNoteResult.value);
     }
-    return ok([this.root, ...transposedNotes]);
+    const notes = [this.root, ...transposedNotes];
+    for (let i = 0; i < this.inversion; i++) {
+      const noteToInvert = notes.shift();
+      if (!noteToInvert) {
+        return err(
+          new Error("Failed to invert chord notes due to missing note."),
+        );
+      }
+      notes.push(noteToInvert);
+    }
+    return ok(notes);
+  }
+
+  invert(): Result<Chord, Error> {
+    const intervals = Chord.chordIntervals.get(this.quality);
+    if (!intervals) {
+      return err(
+        new Error("No interval data found for the specified chord quality."),
+      );
+    }
+    return ok(
+      new Chord(
+        this.root,
+        this.quality,
+        (this.inversion + 1) % (intervals.length + 1),
+      ),
+    );
+  }
+
+  static fromNotes(notes: Note[]): Result<Chord, Error> {
+    if (notes.length < 3 || notes.length > 4) {
+      return err(new Error("Chord identification requires 3 or 4 notes."));
+    }
+    const inputNames = notes.map((n) => n.name);
+    const sortedInput = [...inputNames].sort();
+
+    for (const quality of Object.values(ChordQuality)) {
+      const intervals = Chord.chordIntervals.get(quality);
+      if (!intervals || intervals.length + 1 !== notes.length) continue;
+
+      for (const potentialRoot of notes) {
+        const chordResult = Chord.create(potentialRoot, quality);
+        if (chordResult.isErr()) continue;
+
+        const chordNotes = chordResult.value.notes;
+        if (chordNotes.isErr()) continue;
+
+        const rootPositionNames = chordNotes.value.map((n) => n.name);
+        const sortedRoot = [...rootPositionNames].sort();
+
+        if (sortedInput.every((name, i) => name === sortedRoot[i])) {
+          const bassNote = notes[0];
+          if (!bassNote) {
+            return err(
+              new Error("Could not identify chord from the given notes."),
+            );
+          }
+          const inversion = rootPositionNames.findIndex(
+            (name) => name === bassNote.name,
+          );
+          return Chord.create(potentialRoot, quality, inversion);
+        }
+      }
+    }
+
+    return err(new Error("Could not identify chord from the given notes."));
   }
 }

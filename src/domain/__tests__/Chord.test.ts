@@ -7,7 +7,7 @@ function note(name: NoteName): Note {
 }
 
 describe("Chord", () => {
-  test("create chord", () => {
+  test("create chord in root position", () => {
     const n = note(NoteName.C);
     const result = Chord.create(n, ChordQuality.Major);
 
@@ -16,6 +16,59 @@ describe("Chord", () => {
       expect(result.value.root.equals(n)).toBe(true);
       expect(result.value.quality).toBe(ChordQuality.Major);
     }
+  });
+
+  test("create chord in first inversion", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major, 1);
+
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.equals(n)).toBe(true);
+      expect(result.value.quality).toBe(ChordQuality.Major);
+      expect(result.value.inversion).toBe(1);
+    }
+  });
+
+  test("create chord in second inversion", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major, 2);
+
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.inversion).toBe(2);
+    }
+  });
+
+  test("create 7th chord in third inversion", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major7, 3);
+
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.inversion).toBe(3);
+    }
+  });
+
+  test("reject inversion beyond triad range", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major, 3);
+
+    expect(result.isErr()).toBe(true);
+  });
+
+  test("reject inversion beyond 7th chord range", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major7, 4);
+
+    expect(result.isErr()).toBe(true);
+  });
+
+  test("reject negative inversion", () => {
+    const n = note(NoteName.C);
+    const result = Chord.create(n, ChordQuality.Major, -1);
+
+    expect(result.isErr()).toBe(true);
   });
 
   test("equals", () => {
@@ -149,5 +202,222 @@ describe("Chord", () => {
       NoteName.F,
       NoteName.AFlat,
     ]);
+  });
+
+  test("notes of a major chord in first inversion", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      1,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.E,
+      NoteName.G,
+      NoteName.C,
+    ]);
+  });
+
+  test("notes of a major chord in second inversion", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      2,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.G,
+      NoteName.C,
+      NoteName.E,
+    ]);
+  });
+
+  test("notes of a 7th chord in first inversion", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major7,
+      1,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.E,
+      NoteName.G,
+      NoteName.B,
+      NoteName.C,
+    ]);
+  });
+
+  test("notes of a 7th chord in third inversion", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major7,
+      3,
+    )._unsafeUnwrap();
+    const notes = chord.notes._unsafeUnwrap();
+    expect(notes.map((n) => n.name)).toEqual([
+      NoteName.B,
+      NoteName.C,
+      NoteName.E,
+      NoteName.G,
+    ]);
+  });
+
+  test("invert triad from root position to first inversion", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    const inverted = chord.invert()._unsafeUnwrap();
+    expect(inverted.inversion).toBe(1);
+    expect(inverted.root.equals(note(NoteName.C))).toBe(true);
+    expect(inverted.notes._unsafeUnwrap().map((n) => n.name)).toEqual([
+      NoteName.E,
+      NoteName.G,
+      NoteName.C,
+    ]);
+  });
+
+  test("invert triad wraps back to root position", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      2,
+    )._unsafeUnwrap();
+    const inverted = chord.invert()._unsafeUnwrap();
+    expect(inverted.inversion).toBe(0);
+    expect(inverted.notes._unsafeUnwrap().map((n) => n.name)).toEqual([
+      NoteName.C,
+      NoteName.E,
+      NoteName.G,
+    ]);
+  });
+
+  test("invert 7th chord wraps back to root position", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major7,
+      3,
+    )._unsafeUnwrap();
+    const inverted = chord.invert()._unsafeUnwrap();
+    expect(inverted.inversion).toBe(0);
+    expect(inverted.notes._unsafeUnwrap().map((n) => n.name)).toEqual([
+      NoteName.C,
+      NoteName.E,
+      NoteName.G,
+      NoteName.B,
+    ]);
+  });
+
+  test("chaining invert cycles through all inversions", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    const first = chord.invert()._unsafeUnwrap();
+    const second = first.invert()._unsafeUnwrap();
+    const back = second.invert()._unsafeUnwrap();
+    expect(first.inversion).toBe(1);
+    expect(second.inversion).toBe(2);
+    expect(back.inversion).toBe(0);
+  });
+
+  test("identify major chord in root position from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.C),
+      note(NoteName.E),
+      note(NoteName.G),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.C);
+      expect(result.value.quality).toBe(ChordQuality.Major);
+      expect(result.value.inversion).toBe(0);
+    }
+  });
+
+  test("identify major chord in first inversion from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.E),
+      note(NoteName.G),
+      note(NoteName.C),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.C);
+      expect(result.value.quality).toBe(ChordQuality.Major);
+      expect(result.value.inversion).toBe(1);
+    }
+  });
+
+  test("identify major chord in second inversion from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.G),
+      note(NoteName.C),
+      note(NoteName.E),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.C);
+      expect(result.value.quality).toBe(ChordQuality.Major);
+      expect(result.value.inversion).toBe(2);
+    }
+  });
+
+  test("identify minor chord from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.A),
+      note(NoteName.C),
+      note(NoteName.E),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.A);
+      expect(result.value.quality).toBe(ChordQuality.Minor);
+      expect(result.value.inversion).toBe(0);
+    }
+  });
+
+  test("identify 7th chord from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.C),
+      note(NoteName.E),
+      note(NoteName.G),
+      note(NoteName.B),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.C);
+      expect(result.value.quality).toBe(ChordQuality.Major7);
+      expect(result.value.inversion).toBe(0);
+    }
+  });
+
+  test("identify 7th chord in second inversion from notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.G),
+      note(NoteName.B),
+      note(NoteName.C),
+      note(NoteName.E),
+    ]);
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.root.name).toBe(NoteName.C);
+      expect(result.value.quality).toBe(ChordQuality.Major7);
+      expect(result.value.inversion).toBe(2);
+    }
+  });
+
+  test("reject unrecognized notes", () => {
+    const result = Chord.fromNotes([
+      note(NoteName.C),
+      note(NoteName.D),
+      note(NoteName.A),
+    ]);
+    expect(result.isErr()).toBe(true);
+  });
+
+  test("reject too few notes", () => {
+    const result = Chord.fromNotes([note(NoteName.C), note(NoteName.E)]);
+    expect(result.isErr()).toBe(true);
   });
 });
