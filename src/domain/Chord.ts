@@ -237,4 +237,12 @@ export class Chord {
 
     return err(new Error("Could not identify chord from the given notes."));
   }
+
+  contains(note: Note): Result<boolean, Error> {
+    const chordNotesResult = this.notes;
+    if (chordNotesResult.isErr()) {
+      return err(new Error("Failed to get chord notes for containment check."));
+    }
+    return ok(chordNotesResult.value.some((n) => n.equals(note)));
+  }
 }

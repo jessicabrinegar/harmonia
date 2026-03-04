@@ -420,4 +420,32 @@ describe("Chord", () => {
     const result = Chord.fromNotes([note(NoteName.C), note(NoteName.E)]);
     expect(result.isErr()).toBe(true);
   });
+
+  test("contains returns true for note in chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    expect(chord.contains(note(NoteName.E))._unsafeUnwrap()).toBe(true);
+  });
+
+  test("contains returns false for note not in chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    expect(chord.contains(note(NoteName.F))._unsafeUnwrap()).toBe(false);
+  });
+
+  test("contains works with inverted chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      1,
+    )._unsafeUnwrap();
+    expect(chord.contains(note(NoteName.C))._unsafeUnwrap()).toBe(true);
+    expect(chord.contains(note(NoteName.E))._unsafeUnwrap()).toBe(true);
+    expect(chord.contains(note(NoteName.G))._unsafeUnwrap()).toBe(true);
+    expect(chord.contains(note(NoteName.F))._unsafeUnwrap()).toBe(false);
+  });
 });
