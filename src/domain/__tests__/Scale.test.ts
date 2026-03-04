@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ChordQuality } from "../Chord";
+import { Chord, ChordQuality } from "../Chord";
 import { Note, NoteName } from "../Note";
 import { Scale, ScaleType } from "../Scale";
 
@@ -220,5 +220,50 @@ describe("Scale", () => {
   test("chordAt returns err for noteCount less than 3", () => {
     const cMajor = scale(note(NoteName.C), ScaleType.Major);
     expect(cMajor.chordAt(1, 2).isErr()).toBe(true);
+  });
+
+  test("romanNumeral for diatonic triads in C major", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const expected = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
+
+    for (let i = 0; i < expected.length; i++) {
+      const chord = cMajor.chordAt(i + 1)._unsafeUnwrap();
+      expect(cMajor.romanNumeral(chord)._unsafeUnwrap()).toBe(expected[i]!);
+    }
+  });
+
+  test("romanNumeral for diatonic 7th chords in C major", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const expected = ["I⁷", "ii⁷", "iii⁷", "IV⁷", "V⁷", "vi⁷", "vii°⁷"];
+
+    for (let i = 0; i < expected.length; i++) {
+      const chord = cMajor.chordAt(i + 1, 4)._unsafeUnwrap();
+      expect(cMajor.romanNumeral(chord)._unsafeUnwrap()).toBe(expected[i]!);
+    }
+  });
+
+  test("romanNumeral for augmented chord", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const augChord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Augmented,
+    )._unsafeUnwrap();
+    expect(cMajor.romanNumeral(augChord)._unsafeUnwrap()).toBe("I+");
+  });
+
+  test("romanNumeral returns err for note not in scale", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const chord = Chord.create(
+      note(NoteName.FSharp),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    expect(cMajor.romanNumeral(chord).isErr()).toBe(true);
+  });
+
+  test("romanNumeral works with inverted chord", () => {
+    const cMajor = scale(note(NoteName.C), ScaleType.Major);
+    const chord = cMajor.chordAt(5)._unsafeUnwrap().invert()._unsafeUnwrap();
+    expect(chord.inversion).toBe(1);
+    expect(cMajor.romanNumeral(chord)._unsafeUnwrap()).toBe("V");
   });
 });

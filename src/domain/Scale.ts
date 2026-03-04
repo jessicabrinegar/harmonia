@@ -156,4 +156,56 @@ export class Scale {
       return ok(new Scale(startingNote, scaleType));
     });
   }
+
+  romanNumeral(chord: Chord): Result<string, Error> {
+    return this.degreeOf(chord.root).map((degree) => {
+      const numeralMap: Record<number, string> = {
+        1: "I",
+        2: "II",
+        3: "III",
+        4: "IV",
+        5: "V",
+        6: "VI",
+        7: "VII",
+      };
+      let numeral = numeralMap[degree] || "?";
+      const isMinor =
+        chord.quality === ChordQuality.Minor ||
+        chord.quality === ChordQuality.Minor7 ||
+        chord.quality === ChordQuality.MinorMajor7;
+      const isDiminished =
+        chord.quality === ChordQuality.Diminished ||
+        chord.quality === ChordQuality.HalfDiminished7 ||
+        chord.quality === ChordQuality.Diminished7;
+
+      if (isMinor || isDiminished) {
+        numeral = numeral.toLowerCase();
+      }
+
+      if (isDiminished) {
+        numeral += "°";
+      } else if (
+        chord.quality === ChordQuality.Augmented ||
+        chord.quality === ChordQuality.AugmentedMajor7
+      ) {
+        numeral += "+";
+      }
+
+      const is7th = [
+        ChordQuality.Major7,
+        ChordQuality.Minor7,
+        ChordQuality.Dominant7,
+        ChordQuality.HalfDiminished7,
+        ChordQuality.Diminished7,
+        ChordQuality.MinorMajor7,
+        ChordQuality.AugmentedMajor7,
+      ].includes(chord.quality);
+
+      if (is7th) {
+        numeral += "⁷";
+      }
+
+      return numeral;
+    });
+  }
 }
