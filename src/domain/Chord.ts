@@ -238,6 +238,37 @@ export class Chord {
     return err(new Error("Could not identify chord from the given notes."));
   }
 
+  private static readonly qualitySuffix = new Map<ChordQuality, string>([
+    [ChordQuality.Major, ""],
+    [ChordQuality.Minor, "m"],
+    [ChordQuality.Diminished, "dim"],
+    [ChordQuality.Augmented, "aug"],
+    [ChordQuality.Major7, "maj7"],
+    [ChordQuality.Minor7, "m7"],
+    [ChordQuality.Dominant7, "7"],
+    [ChordQuality.HalfDiminished7, "m7b5"],
+    [ChordQuality.Diminished7, "dim7"],
+    [ChordQuality.MinorMajor7, "mMaj7"],
+    [ChordQuality.AugmentedMajor7, "augMaj7"],
+  ]);
+
+  toString(): string {
+    const suffix = Chord.qualitySuffix.get(this.quality) ?? "";
+    const name = `${this.root.name}${suffix}`;
+    if (this.inversion === 0) {
+      return name;
+    }
+    const chordNotes = this.notes;
+    if (chordNotes.isErr()) {
+      return name;
+    }
+    const bassNote = chordNotes.value[0];
+    if (!bassNote) {
+      return name;
+    }
+    return `${name}/${bassNote.name}`;
+  }
+
   contains(note: Note): Result<boolean, Error> {
     const chordNotesResult = this.notes;
     if (chordNotesResult.isErr()) {

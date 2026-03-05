@@ -448,4 +448,79 @@ describe("Chord", () => {
     expect(chord.contains(note(NoteName.G))._unsafeUnwrap()).toBe(true);
     expect(chord.contains(note(NoteName.F))._unsafeUnwrap()).toBe(false);
   });
+
+  test("toString for major chord", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("C");
+  });
+
+  test("toString for minor chord", () => {
+    const chord = Chord.create(
+      note(NoteName.A),
+      ChordQuality.Minor,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("Am");
+  });
+
+  test("toString for dominant 7th chord", () => {
+    const chord = Chord.create(
+      note(NoteName.G),
+      ChordQuality.Dominant7,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("G7");
+  });
+
+  test("toString for diminished chord", () => {
+    const chord = Chord.create(
+      note(NoteName.B),
+      ChordQuality.Diminished,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("Bdim");
+  });
+
+  test("toString with sharp root", () => {
+    const chord = Chord.create(
+      note(NoteName.FSharp),
+      ChordQuality.Minor,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("F#m");
+  });
+
+  test("toString with flat root", () => {
+    const chord = Chord.create(
+      note(NoteName.BFlat),
+      ChordQuality.Major7,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("Bbmaj7");
+  });
+
+  test("toString with first inversion shows slash notation", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      1,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("C/E");
+  });
+
+  test("toString with second inversion shows slash notation", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major,
+      2,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("C/G");
+  });
+
+  test("toString with inverted 7th chord shows slash notation", () => {
+    const chord = Chord.create(
+      note(NoteName.C),
+      ChordQuality.Major7,
+      3,
+    )._unsafeUnwrap();
+    expect(chord.toString()).toBe("Cmaj7/B");
+  });
 });
